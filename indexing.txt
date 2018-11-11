@@ -1,0 +1,20 @@
+indexing
+	description:
+		"Mathimatical classes for matrices, vectors, floating point safety, etc.Ó
+
+	copyright:
+		"Copyright (C) 2006 Jimmy J. Johnson"
+
+	notice:
+		"[
+		Test text.
+
+		]"
+
+	information:
+		"[
+		Telephone 
+		Electronic mail <info@...>
+		Customer support e-mail <support@...>
+		For latest info see award-winning pages: http://...
+		]"
