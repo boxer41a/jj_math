@@ -140,7 +140,6 @@ feature -- Access
 			Result := sqrt (precision)
 		ensure
 			result_large_enough: Result > zero
---			result_small_enough: Result <= small_number
 		end
 
 	limited_value (x: DOUBLE): DOUBLE
@@ -157,9 +156,10 @@ feature -- Access
 				end
 			end
 		ensure
-			non_zero_result: not (Result = zero)
+			non_zero_result: not very_close (Result, zero)
 			result_big_enough: Result.abs >= small_number
---			definition: very_close ((one * Result).abs, one)
+			too_small_definition: x.abs <= small_number implies very_close (Result, small_number)
+			not_small_definition: x.abs > small_number implies very_close (Result, x)
 			positive_sign_unchanged: x > zero implies Result > zero
 			negative_sign_unchanged: x < zero implies Result < zero
 		end

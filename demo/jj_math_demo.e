@@ -141,6 +141,29 @@ feature -- Basic operations
 		local
 			m, ans: MATRIX
 		do
+				-- A 1x1 matrix
+			create m.make (1, 1)
+			m [1,1] := 9.9
+			m.adjoin
+			print ("adjoin 1x1 = ")
+			m.show
+			create ans.make (1, 1)
+			ans[1,1] := 1.0
+			check
+				expected:  m.is_very_close (ans)
+			end
+				-- A 1x1 matrax that `is_zero'
+			create m.make (1, 1)
+			m [1,1] := 0.0
+			m.adjoin
+			print ("adjoin 1x1 = ")
+			m.show
+			create ans.make (1, 1)
+			ans[1,1] := 1.0
+			check
+				expected:  m.is_very_close (ans)
+			end
+				-- Other tests			
 			create m.make (3, 3)
 			m[1,1] := 2.0	m[1,2] := 4.0	m[1,3] := 0.0
 			m[2,1] := 0.0	m[2,2] := 2.0	m[2,3] := 1.0
@@ -153,9 +176,6 @@ feature -- Basic operations
 			check
 				expected:  m.is_very_close (ans)
 			end
-
-			create m.make (1, 1)
-			m.adjoin
 		end
 
 	test_row_matrix_catcall
