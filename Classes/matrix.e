@@ -1,4 +1,4 @@
-note
+﻿note
 	description: "[
 			A two demensional matrix.
 		]"
@@ -315,7 +315,7 @@ feature -- Transformation
 			valid_column_count: nb_cols = a_other.nb_cols
 		end
 
-	frozen transpose	-- conjugate is
+	frozen transpose
 			-- Interchange rows and columns
 		local
 			m: MATRIX
@@ -531,7 +531,7 @@ feature  -- Basic operations
 			Result := twin
 		end
 
-	frozen negation, additive_inverse, opposite alias "-": like Current
+	frozen negation, additive_inverse, opposite alias "-" alias "−": like Current
 			-- Same as `negate' but does not change current.
 		do
 			Result := twin
@@ -561,7 +561,7 @@ feature  -- Basic operations
 			Result.scalar_multiply (a_number)
 		end
 
-	minus alias "-" (a_other: MATRIX): like Current
+	minus alias "-" alias "−" (a_other: MATRIX): like Current
 			-- Same as `subtract' but does not change current.
 		require else
 			matrix_exists: a_other /= Void
@@ -590,7 +590,7 @@ feature  -- Basic operations
 			Result := minus (a_other)
 		end
 
-	product alias "*" (a_other: MATRIX): MATRIX
+	product alias "*" alias "×" (a_other: like Current): like Current
 			-- The product between Current and `a_other'.
 		require else
 			matrix_exists: a_other /= Void
@@ -968,7 +968,7 @@ feature {NONE} -- Inapplicable
 			end
 		end
 
-	quotient alias "/" (other: like Current): like Current
+	quotient alias "/" alias "÷" (other: like Current): like Current
 			-- Division by `other'
 		do
 			check

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<system xmlns="http://www.eiffel.com/developers/xml/configuration-1-21-0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.eiffel.com/developers/xml/configuration-1-21-0 http://www.eiffel.com/developers/xml/configuration-1-21-0.xsd" name="jj_math" uuid="B3006114-04CF-4B25-B789-A7356C02D4E0" readonly="false" library_target="jj_math">
+	<target name="jj_math">
+		<root all_classes="true"/>
+		<option warning="warning" is_obsolete_routine_type="true" syntax="standard" manifest_array_type="mismatch_warning">
+		</option>
+		<setting name="total_order_on_reals" value="false"/>
+		<setting name="dead_code_removal" value="feature"/>
+		<capability>
+			<concurrency support="scoop"/>
+			<void_safety support="all" use="all"/>
+		</capability>
+		<library name="base-safe" location="$ISE_LIBRARY\library\base\base-safe.ecf"/>
+		<cluster name="jj_math" location=".\" recursive="true">
+			<file_rule>
+				<exclude>/.git$</exclude>
+				<exclude>/.svn$</exclude>
+				<exclude>/CVS$</exclude>
+				<exclude>/EIFGENs$</exclude>
+				<exclude>/demo$</exclude>
+				<exclude>/docs$</exclude>
+			</file_rule>
+		</cluster>
+	</target>
+</system>

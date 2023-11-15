@@ -60,7 +60,7 @@ feature -- Access
 			if last < Modulus - rem then
 				Result := lower + (last // bkt)
 			else
-				Result := next;
+				Result := next;         -- recurse here
 			end
 		ensure
 			result_large_enough: Result >= lower

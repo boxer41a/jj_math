@@ -1,4 +1,4 @@
-note
+﻿note
 	description: "[
 		Representation of complex numbers:  z = x + yi where i = sqrt(-1)
 		]"
@@ -154,7 +154,7 @@ feature -- Basic operations
 			definition_imaginary_part: very_close (Result.yi, yi + other.yi)
 		end
 
-	minus alias "-" (other: like Current): like Current
+	minus alias "-" alias "−" (other: like Current): like Current
 			-- Result of subtracting `other'
 		do
 			create Result.make (x - other.x, yi - other.yi)
@@ -163,7 +163,7 @@ feature -- Basic operations
 			definition_imaginary_part: very_close (Result.yi, yi - other.yi)
 		end
 
-	product alias "*" (other: like Current): like Current
+	product alias "*" alias "×" (other: like Current): like Current
 			-- Product by `other'
 		do
 			create Result.make (x * other.x - yi * other.yi, yi * other.x + x * other.yi)
@@ -172,7 +172,7 @@ feature -- Basic operations
 			definition_imaginary_part: very_close (Result.yi, yi * other.x + x * other.yi)
 		end
 
-	quotient alias "/" (other: like Current): like Current
+	quotient alias "/" alias "÷" (other: like Current): like Current
 			-- Division by `other'
 		local
 			r, i: DOUBLE
@@ -198,7 +198,7 @@ feature -- Basic operations
 			definition_imaginary_part: very_close (Result.yi, yi)
 		end
 
-	opposite alias "-": like Current
+	opposite alias "-" alias "−": like Current
 			-- Unary minus
 		do
 			create Result.make (-x, -yi)
