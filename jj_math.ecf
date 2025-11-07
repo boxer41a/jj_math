@@ -4,7 +4,7 @@
 		<root all_classes="true"/>
 		<option warning="true" void_safety="all" syntax="standard">
 		</option>
-		<library name="base-safe" location="$ISE_LIBRARY\library\base\base-safe.ecf"/>
+		<library name="base" location="$ISE_LIBRARY\library\base\base.ecf"/>
 <!-- ---- my classes ---- -->
 		<cluster name="jj_math" location=".\" recursive="true">
 			<file_rule>
