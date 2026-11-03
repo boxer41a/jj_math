@@ -28,8 +28,8 @@ note
 		types, 2) some numeric classes do not have all the required features (e.g.
 		NATURAL_xx does not have feature `abs' or `negate').  Also, with 64-bit
 		computing do we really need a REAL_32 version?
-		]"
-	date: "21 Apr 06"
+	]"
+	date:		"21 Apr 06"
 	author:		"Jimmy J. Johnson"
 	copyright:	"Copyright 2009, Jimmy J. Johnson"
 
@@ -41,6 +41,47 @@ inherit
 	DOUBLE_MATH
 
 feature -- Access
+
+	radix: INTEGER
+			-- Base used in the representation of floating-point numbers.
+			-- A floating-point number is represented as:
+			--     Significand * radix ^ exponent.	
+		local
+			a, b: DOUBLE
+			tmp1, tmp2: DOUBLE
+		once
+			from
+				a := One
+			until
+				tmp2 - One = Zero
+			loop
+				a := a + a
+				tmp1 := a + One
+				tmp2 := tmp1 - a
+			end
+			from
+				b := One
+			until
+				Result /= Zero
+			loop
+				b := b + b
+				tmp1 := a + b
+				Result := (tmp1 - a).truncated_to_integer
+			end
+		ensure
+			valid_result: Result >= 2
+		end
+
+	inverse_radix: DOUBLE
+			-- Reciprocal of `radix'.
+			-- Used to determine the precision and range of floating-point numbers.	
+		require
+			valid_radix: radix >= 2
+		once
+			Result := One / radix
+		ensure
+			definition: Result = One / radix
+		end
 
 	precision: DOUBLE
 			-- Largest positive number that, when added to 1, yields 1.
@@ -130,7 +171,7 @@ feature -- Access
 			Result := sqrt (Smallest)
 		ensure
 			result_large_enough: Result > zero
-			definition: very_close (zero + Result, zero)
+			definition: very_close (one + Result, one)
 		end
 
 	default_tolerance: DOUBLE
@@ -183,8 +224,8 @@ feature -- Access
 			-- Result := largest * largest
 		end
 
-	undefined: DOUBLE
-			-- The floating point representation of a divide by zero error.
+	nan: DOUBLE
+			-- The Not-a-number (NaN) value.
 		local
 			d: DOUBLE
 		once
@@ -246,53 +287,12 @@ feature -- Query
 		end
 
 	is_infinite (a_value: DOUBLE): BOOLEAN
-			-- Does `a_value' represent a number that is infinite?
-			-- Relies on the use of `a_value' in an expression to cause a
-			-- "floating point exception" and if so returns True.
+			-- Does `a_value' represent an infinite number?
 		do
-			Result := a_value = Infinity
+			Result := a_value = Infinity or else a_value = -Infinity
 		end
 
 feature {NONE} -- Implementation
-
-	radix: INTEGER
-			-- Radix used in machine's representation of floating-point numbers.
-			-- A floating point number is represented as "Mantissa x Radix ^ Exponent".
-		local
-			a, b: DOUBLE
-			tmp1, tmp2: DOUBLE
-		once
-			from
-				a := One
-			until
-				tmp2 - One = Zero
-			loop
-				a := a + a
-				tmp1 := a + One
-				tmp2 := tmp1 - a
-			end
-			from
-				b := One
-			until
-				Result /= Zero
-			loop
-				b := b + b
-				tmp1 := a + b
-				Result := (tmp1 - a).truncated_to_integer
-			end
-		ensure
-			valid_result: Result >= 2
-		end
-
-	inverse_radix: DOUBLE
-			-- The reciprocal of `radix'
-		require
-			valid_radix: radix >= 2
-		once
-			Result := One / radix
-		ensure
-			definition: Result = One / radix
-		end
 
 	full_mantissa: DOUBLE
 			-- Helper function for some of the computations.
@@ -305,8 +305,8 @@ feature {NONE} -- Implementation
 		do
 			if u = v then
 				Result := Zero
-			elseif v = Zero then
-				Result := (Zero - u).abs
+			elseif u = Zero then
+				Result := v.abs
 			else
 				Result := (u - v).abs / u.abs
 			end
@@ -318,7 +318,7 @@ feature {NONE} -- Implementation
 			if u = v then
 				Result := Zero
 			elseif v = Zero then
-				Result := (Zero - u).abs
+				Result := u.abs
 			else
 				Result := (u - v).abs / v.abs
 			end

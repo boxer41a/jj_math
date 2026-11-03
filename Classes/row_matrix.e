@@ -36,7 +36,7 @@ create {MATRIX}
 feature {NONE} -- Initialization
 
 	default_create
-			-- Create a matrix with 1 row and 3 column.
+			-- Create a matrix with 1 row and 3 columns.
 		do
 			make (3)
 		end

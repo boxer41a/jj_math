@@ -1,9 +1,9 @@
 note
 	description: "[
-			Basic angle to radians and back conversions.
+			Angle operations and conversions between degrees and radians.
 		]"
-	date: "1 Oct 99"
-	author:		"Jimmy J. Johnson"
+	date:  "10/1/99, 11/2/26"
+	author:  "Jimmy J. Johnson"
 
 class
 	DOUBLE_ANGLES
@@ -20,7 +20,43 @@ inherit
 			{ANY} all
 		end
 
-feature
+feature -- Query
+
+	normalize_degrees (degrees: DOUBLE): DOUBLE
+			-- Equivalent angle in the range [0, 360).
+		require
+			degrees_non_negative: degrees >= 0.0
+		do
+			Result := degrees - 360.0 * (degrees / 360.0).floor
+		ensure
+			result_in_range: is_normalized_degrees (Result)
+		end
+
+	is_normalized_degrees (degrees: DOUBLE): BOOLEAN
+			-- Is `degrees' in the normalized range [0, 360)?
+		do
+			Result := degrees >= 0.0 and degrees < 360.0
+		ensure
+			definition: Result implies degrees >= 0.0 and degrees < 360
+		end
+
+	normalize_radians (radians: DOUBLE): DOUBLE
+			-- Equivalent angle in the range [0, 2 * Pi).
+		require
+			radians_non_negative: radians >= 0.0
+		do
+			Result := radians - 2.0 * Pi * (radians / (2.0 * Pi)).floor
+		ensure
+			result_in_range: is_normalized_radians (Result)
+		end
+
+	is_normalized_radians (radians: DOUBLE): BOOLEAN
+			-- Is `radians' in the normalized range [0, 2 * Pi)?
+		do
+			Result := radians >= 0.0 and radians < 2.0 * Pi
+		ensure
+			definition: Result implies radians >= 0.0 and radians < 2.0 * Pi
+		end
 
 	degree_reciprocal (degrees: DOUBLE): DOUBLE
 			-- Angle in degrees that is oposite `degrees'
@@ -67,12 +103,12 @@ feature
 	radian_supplement (radians: DOUBLE): DOUBLE
 			-- The angle (in radians) that is supplementary to `radians'.
 		require
-			in_range: radians >= 0 and radians <= 2 * Pi
+			in_range: radians >= 0 and radians <= Pi
 		do
-			Result := 2 * Pi - radians
+			Result := Pi - radians
 		ensure
-			definition: very_close (Result + radians, 2 * Pi)
-			result_in_range: Result >= 0 and Result <= 2 * Pi
+			definition: very_close (Result + radians, Pi)
+			result_in_range: Result >= 0 and Result <= Pi
 		end
 
 	degree_complement (degrees: DOUBLE): DOUBLE
@@ -89,12 +125,12 @@ feature
 	radian_complement (radians: DOUBLE): DOUBLE
 			-- The angle (in radians) that is complementary to `radians'.
 		require
-			in_range: radians >= 0 and radians <= Pi
+			in_range: radians >= 0 and radians <= Pi / 2
 		do
-			Result := Pi - radians
+			Result := Pi / 2 - radians
 		ensure
-			definition: very_close (Result + radians, Pi)
-			result_in_range: 0 <= Result and Result <= Pi
+			definition: very_close (Result + radians, Pi / 2)
+			result_in_range: 0 <= Result and Result <= Pi / 2
 		end
 
 	radians_to_degrees (radians: DOUBLE): DOUBLE
