@@ -218,6 +218,8 @@ feature -- Query tests
 		local
 			s: STRING_8
 			sdm: SAFE_DOUBLE_MATH
+			large: REAL_64
+			nearby: REAL_64
 		do
 			s := "very_close"
 			divider (s)
@@ -228,6 +230,12 @@ feature -- Query tests
 			predicate (agent sdm.very_close (0.0, 0.0), s, True)
 			predicate (agent sdm.very_close (1.0, 0.0), s, False)
 			predicate (agent sdm.very_close (0.0, 1.0), s, False)
+				-- Test close number, spread out, etc.
+			large := sdm.largest
+			nearby := large - large * (sdm.default_tolerance / 2.0)
+			predicate (agent sdm.very_close (large, nearby), s, True)
+			predicate (agent sdm.very_close (large, -large), s, False)
+			predicate (agent sdm.very_close (sdm.smallest, large), s, False)
 		end
 
 	test_close_enough
@@ -235,6 +243,7 @@ feature -- Query tests
 		local
 			s: STRING_8
 			sdm: SAFE_DOUBLE_MATH
+			large: REAL_64
 		do
 			s := "close_enough"
 			divider (s)
@@ -245,22 +254,43 @@ feature -- Query tests
 			predicate (agent sdm.close_enough (0.0, 0.0), s, True)
 			predicate (agent sdm.close_enough (1.0, 0.0), s, False)
 			predicate (agent sdm.close_enough (0.0, 1.0), s, False)
+				-- Test close number, spread out, etc.
+			large := sdm.largest
+			predicate (agent sdm.close_enough (0.0, 0.0), s, True)
+			predicate (agent sdm.close_enough (0.0, 0.5 * sdm.default_tolerance), s, True)
+			predicate (agent sdm.close_enough (large, -large), s, False)
+			predicate (agent sdm.close_enough (sdm.smallest, large), s, False)
 		end
 
 	test_very_close_with_tolerance
-				-- Verify behavior for representative input values.	
+			-- Verify behavior for representative input values.
 		local
 			s: STRING_8
 			sdm: SAFE_DOUBLE_MATH
+			large: REAL_64
+			nearby: REAL_64
+			t: REAL_64			-- tolerance
 		do
 			s := "very_close_with_tolerance"
 			divider (s)
 			create sdm
-			predicate (agent sdm.very_close_with_tolerance (1.0, 1.0, 0.095), s, True)
-			predicate (agent sdm.very_close_with_tolerance (1.0, 1.1, 0.095), s, False)
-			predicate (agent sdm.very_close_with_tolerance (1.1, 1.0, 0.095), s, False)
-			predicate (agent sdm.very_close_with_tolerance (1.0, 2.0, 0.095), s, False)
-			predicate (agent sdm.very_close_with_tolerance (0.0, 0.0, 0.095), s, True)
+			t := 0.05
+				-- Run some early tests
+			predicate (agent sdm.very_close_with_tolerance (1.0, 1.0, t), s, True)
+			predicate (agent sdm.very_close_with_tolerance (1.0, 1.1, t), s, False)
+			predicate (agent sdm.very_close_with_tolerance (1.1, 1.0, t), s, False)
+			predicate (agent sdm.very_close_with_tolerance (1.0, 2.0, t), s, False)
+			predicate (agent sdm.very_close_with_tolerance (0.0, 0.0, t), s, True)
+				-- Test values near the largest representable number.
+			large := sdm.largest
+			nearby := large - large * 0.01
+			predicate (agent sdm.very_close_with_tolerance (large, nearby, t), s, True)
+				-- Test subtraction that would overflow without scaling.
+			predicate (agent sdm.very_close_with_tolerance (large, -large, t), s, False)
+				-- Test very different magnitudes.
+			predicate (agent sdm.very_close_with_tolerance (sdm.smallest, large, t), s, False)
+				-- Test comparison with zero.
+			predicate (agent sdm.very_close_with_tolerance (0.05, 0.0, t), s, False)
 		end
 
 	test_close_enough_with_tolerance
@@ -268,15 +298,29 @@ feature -- Query tests
 		local
 			s: STRING_8
 			sdm: SAFE_DOUBLE_MATH
+			large: REAL_64
+			nearby: REAL_64
+			t: REAL_64			-- tolerance
 		do
 			s := "close_enough_with_tolerance"
 			divider (s)
 			create sdm
-			predicate (agent sdm.close_enough_with_tolerance (1.0, 1.0, 0.095), s, True)
-			predicate (agent sdm.close_enough_with_tolerance (1.0, 1.1, 0.095), s, True)
-			predicate (agent sdm.close_enough_with_tolerance (1.1, 1.0, 0.095), s, True)
-			predicate (agent sdm.close_enough_with_tolerance (1.0, 2.0, 0.095), s, False)
-			predicate (agent sdm.close_enough_with_tolerance (0.0, 0.0, 0.095), s, True)
+			t := 0.01
+			predicate (agent sdm.close_enough_with_tolerance (1.0, 1.0, t), s, True)
+			predicate (agent sdm.close_enough_with_tolerance (1.0, 1.1, t), s, False)
+			predicate (agent sdm.close_enough_with_tolerance (1.1, 1.0, t), s, False)
+			predicate (agent sdm.close_enough_with_tolerance (1.0, 2.0, t), s, False)
+			predicate (agent sdm.close_enough_with_tolerance (0.0, 0.0, t), s, True)
+				-- Test values near the largest representable number.
+			large := sdm.largest
+			nearby := large - large * 0.005
+			predicate (agent sdm.close_enough_with_tolerance (large, nearby, t), s, True)
+				-- Test subtraction that would overflow without scaling.
+			predicate (agent sdm.close_enough_with_tolerance (large, -large, t), s, False)
+				-- Test very different magnitudes.
+			predicate (agent sdm.close_enough_with_tolerance (sdm.smallest, large, t), s, False)
+				-- Test comparison with zero.
+			predicate (agent sdm.close_enough_with_tolerance (0.05, 0.0, t), s, False)
 		end
 
 	test_inverse_square_root

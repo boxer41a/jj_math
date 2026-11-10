@@ -1,19 +1,23 @@
 note
 	description: "[
 		Routines for finding the numerical precision of a platform and routines
-		for comparing DOUBLEs to acount for rounding errors, and overflow.
+		for comparing DOUBLE values to account for rounding errors, and overflow.
 		These features were adapted from "Object-Oriented Implementation of
 		Numerical Methods" by Didier H. Besset; ISBN: 1-55860-679-3" as inspired
 		by Steven M. Wurster.
 
 		The equations for the comparison features are from "The Art of Computer
-		Programming (Vol II), by Knuth.  Paraphasing "for given floating point
+		Programming (Vol II), by Knuth.  Paraphrasing "for given floating point
 		values `u' and `v' and a tolerance `e':
 			|u - v| <= e * |u| and |u - v| <= e * |v|		(1)
 		describes a *very close* relationship;
 		equation
 			|u - v| <= e * |u| or |u - v| <= e * |v|		(2)
-		describes a *close enough" relatinship."
+		describes a *close enough* relationship."
+		
+		For a very-close test, both directions must pass; for a close-enough
+		test either direction may pass.
+		
 		To prevent underflow (or overflow?) in the multiplication of the right side
 		of the inequalities, features `very_close' and `close_enough' are
 		modified by replacing the multiplication on the right with a division on
@@ -21,6 +25,11 @@ note
 			|u - v| / |u| <= e and |u - v| / |v| <= e		(1')
 		and
 			|u - v| / |u| <= e or |u - v| / |v| <= e		(2')
+
+
+
+			--     Absolute diffence is how far apart the two value are;
+			--     Relative difference is how far apart they are compared to their size?
 
 		It is tempting to try to use generic types for this class with constrained
 		generic parameters, such as SAFE_MATH [G -> {NUMERIC, COMPARABLE}], but
@@ -50,20 +59,25 @@ feature -- Access
 			a, b: DOUBLE
 			tmp1, tmp2: DOUBLE
 		once
+				-- Determine when floating-point addition loses the samller operand
 			from
 				a := One
 			until
-				tmp2 - One = Zero
+				tmp2 - One /= Zero
 			loop
+					-- Double `a' until adding `One' to it no longer changes the
+					-- result after subtracting `a'.
 				a := a + a
 				tmp1 := a + One
 				tmp2 := tmp1 - a
 			end
+				-- Determine the `radix'
 			from
 				b := One
 			until
 				Result /= Zero
 			loop
+					-- Double `b' until the difference reveals the floating-point radix.
 				b := b + b
 				tmp1 := a + b
 				Result := (tmp1 - a).truncated_to_integer
@@ -84,7 +98,7 @@ feature -- Access
 		end
 
 	precision: DOUBLE
-			-- Largest positive number that, when added to 1, yields 1.
+			-- Smallest tested positive number that, when added to 1, yields 1.	
 		local
 			tmp: DOUBLE
 			test: DOUBLE
@@ -93,7 +107,7 @@ feature -- Access
 				Result := One
 				tmp := One + Result
 			until
-				tmp - One = Zero
+				tmp = One
 			loop
 				Result := Result * inverse_radix
 				tmp := One + Result
@@ -108,10 +122,9 @@ feature -- Access
 		end
 
 	negative_precision: DOUBLE
-			-- Largest positive number that, when subtracted from 1, yields 1.
+			-- Smallest tested positive number that, when subtracted from 1, yields 1.
 		local
 			tmp: DOUBLE
-			test: DOUBLE
 		once
 			from
 				Result := One
@@ -122,7 +135,6 @@ feature -- Access
 				Result := Result * inverse_radix
 				tmp := One - Result
 			end
-			test := One - Result
 		ensure
 			positive: Result > 0
 			definition: One - Result = One
@@ -147,7 +159,7 @@ feature -- Access
 		end
 
 	smallest: DOUBLE
-			-- Smallest non-zero, positive number representable by system.
+			-- Smallest positive, non-zero number representable by system.
 		local
 			tmp: DOUBLE
 		once
@@ -247,8 +259,9 @@ feature -- Query
 		end
 
 	very_close (a_first, a_second: DOUBLE): BOOLEAN
-			-- Is `a_first' and `a_second' "very close" to each other
-			-- with `Default_tolerence'?
+			-- Are `a_first' and `a_second' close relative to both of their magnitudes?
+			-- Both relative differences must be within `Default_tolerance'.	
+			--     See header for definition of absolute versus relative difference.
 		do
 			Result := very_close_with_tolerance (a_first, a_second, Default_tolerance)
 		ensure
@@ -256,8 +269,9 @@ feature -- Query
 		end
 
 	close_enough (a_first, a_second: DOUBLE): BOOLEAN
-			-- Is `a_first' and `a_second' "close enough" to each other
-			-- with `Default_tolerence'?
+			-- Are `a_first' and `a_second' close relative to at least one of their magnitudes?
+			-- At least one relative difference must be within `Default_tolerance'.	
+			--     See header for definition of absolute versus relative difference.
 		do
 			Result := close_enough_with_tolerance (a_first, a_second, Default_tolerance)
 		ensure
@@ -265,24 +279,30 @@ feature -- Query
 		end
 
 	very_close_with_tolerance (a_first, a_second: DOUBLE; a_epsilon: DOUBLE): BOOLEAN
-			-- Is `a_first' and `a_second' "very close" to each other
-			-- with `Default_tolerence'?
+			-- Are `a_first' and `a_second' close relative to both of their magnitudes?
+			-- Both relative differences must be within `a_epsilon'.		
+			--     See header for definition of absolute versus relative difference.
+		require
+			non_negative_epsilon: a_epsilon >= Zero
 		do
-			Result := first_quotient (a_first, a_second) <= a_epsilon and then
-						second_quotient (a_first, a_second) <= a_epsilon
+			Result := is_within_relative_tolerance (a_first, a_second, a_epsilon) and then
+							is_within_relative_tolerance (a_second, a_first, a_epsilon)
 		ensure
 			definition: Result implies first_quotient (a_first, a_second) <= a_epsilon and then
 										second_quotient (a_first, a_second) <= a_epsilon
 		end
 
 	close_enough_with_tolerance (a_first, a_second: DOUBLE; a_epsilon: DOUBLE): BOOLEAN
-			-- Is `a_first' and `a_second' "close enough" to each other
-			-- with `a_epsilon' tolerence?
+			-- Are `a_first' and `a_second' close relative to at least one of their magnitudes?
+			-- At least one relative difference must be within `a_epsilon'.	
+			--     See header for definition of absolute versus relative difference.
+		require
+			non_negative_epsilon: a_epsilon >= Zero
 		do
-			Result := first_quotient (a_first, a_second) <= a_epsilon or else
-						second_quotient (a_first, a_second) <= a_epsilon
+			Result := is_within_relative_tolerance (a_first, a_second, a_epsilon) or else
+				is_within_relative_tolerance (a_second, a_first, a_epsilon)
 		ensure
-			definition: Result implies first_quotient (a_first, a_second) <= a_epsilon or else
+				definition: Result implies first_quotient (a_first, a_second) <= a_epsilon or else
 										second_quotient (a_first, a_second) <= a_epsilon
 		end
 
@@ -300,6 +320,43 @@ feature {NONE} -- Implementation
 			Result := One - radix * negative_precision
 		end
 
+	is_within_relative_tolerance (a_value, a_reference: DOUBLE; a_epsilon: DOUBLE): BOOLEAN
+			-- Is `a_value' within `a_epsilon' of `a_reference', relative to the size
+			-- of `a_reference'?
+			-- This helper implements the same comparisons as equations (1') and (2'),
+			-- but avoids calculating the quotients explicitly to avoid overflow.  Argument
+			-- `a_value' corresponds to "u" and `a_reference' corresponds to "v".  When
+			-- called by `close_enough_with_tolerance' and `very_close_with_tolerance'
+			-- the arguments are revesed.
+			-- For a nonzero reference value it tests:
+			--      | u - v |   /   | v |  <=  e
+			-- by scaling both operands by the same positive value.  The equivalent test is:
+			--      | u/s - v/s |  <=  e * | v/s |
+			-- If scaling causes a very small operand to underflow to zero, the resulting
+			-- comparison still correctly fails for that extremely disparate pair with any
+			-- finite tolerance.
+			-- Handle zero reference value separately, using an absolute comparison:
+			--     | u |  <=  e
+		local
+			scale: DOUBLE
+			value_scaled: DOUBLE
+			reference_scaled: DOUBLE
+		do
+				-- When `a_reference' is zero, compare absolut difference;
+				-- when values are equal, immediately return True.
+			if a_reference = Zero then
+				Result := a_value.abs <= a_epsilon
+			elseif a_value = a_reference then
+				Result := True
+			else
+					-- Scale both values to avoid overflow when subtracting.
+				scale := a_value.abs.max (a_reference.abs)
+				value_scaled := a_value / scale
+				reference_scaled := a_reference / scale
+				Result := (value_scaled - reference_scaled).abs <= a_epsilon * reference_scaled.abs
+			end
+		end
+
 	first_quotient (u, v: DOUBLE): DOUBLE
 			-- The first quotient in equation (1') and (2').  (See header comments.)
 		do
@@ -313,7 +370,7 @@ feature {NONE} -- Implementation
 		end
 
 	second_quotient (u, v: DOUBLE): DOUBLE
-			-- The first quotient in equation (1') and (2').  (See header comments.)
+			-- The second quotient in equation (1') and (2').  (See header comments.)
 		do
 			if u = v then
 				Result := Zero
